@@ -1,0 +1,13 @@
+# AI agent / skills files
+.agent/
+.agents/
+.gemini/
+.claude/
+.cursor/
+.antigravity/
+AGENTS.md
+GEMINI.md
+CLAUDE.md
+
+# Stray literal "~" folder (a failed home-dir expansion that holds .agent/skills)
+~/
