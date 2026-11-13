@@ -3,113 +3,276 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
 <title>LuxMeter Logger</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; background: #111; color: #eee; max-width: 900px; }
-  h1 { font-size: 20px; margin: 0 0 8px; }
-  button, select { font-size: 16px; padding: 10px 14px; margin: 4px 4px 4px 0; border-radius: 6px;
-                   border: 1px solid #666; background: #222; color: #eee; }
-  button:focus-visible, select:focus-visible { outline: 2px solid #fc3; outline-offset: 2px; }
-  #now { font-size: 48px; font-weight: 600; margin: 8px 0 0; font-variant-numeric: tabular-nums; }
-  #status { color: #bbb; min-height: 1.4em; }
-  canvas { width: 100%; height: 260px; background: #000; border: 1px solid #333; display: block; margin-top: 8px; }
-  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin-top: 8px; }
-  td, th { text-align: left; padding: 4px 6px; border-bottom: 1px solid #333; }
+  /* Amber marks the measurement only: the reading, its scale marker, the graph line, the live dot. */
+  :root, [data-theme="dark"] {
+    --bg: #141311; --panel: #1c1b18; --line: #3a3832; --text: #ecebe6; --muted: #a9a59b;
+    --accent: #f2b338; --error: #ff8a7a; --btn-bg: #ecebe6; --btn-text: #141311;
+  }
+  [data-theme="light"] {
+    --bg: #f4f3ef; --panel: #ffffff; --line: #d6d3ca; --text: #1d1c19; --muted: #5c5850;
+    --accent: #9a6200; --error: #b3261e; --btn-bg: #1d1c19; --btn-text: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 { font-size: 18px; font-weight: 600; margin: 0; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  button, select { font: inherit; color: var(--text); background: transparent; min-height: 44px; padding: 0 16px;
+                   border: 1px solid var(--muted); border-radius: 6px; cursor: pointer; }
+  button:hover:not(:disabled), select:hover { border-color: var(--text); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--btn-bg); color: var(--btn-text); border-color: var(--btn-bg); font-weight: 600; }
+  select { padding-right: 8px; background: var(--panel); }
+  :focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  #alert { border: 1px solid var(--error); color: var(--error); border-radius: 8px; padding: 12px 16px; }
+  #alert[hidden] { display: none; }
+
+  .conn { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .state { display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-width: 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot[data-s="live"] { background: var(--accent); }
+  .dot[data-s="error"] { background: var(--error); }
+  #status { overflow-wrap: anywhere; }
+  #status[data-s="error"] { color: var(--error); }
+
+  .readout { display: grid; grid-template-columns: 1fr auto; gap: 20px 32px; align-items: end; }
+  .value { font-size: clamp(56px, 15vw, 104px); font-weight: 600; line-height: 1; letter-spacing: -0.02em; color: var(--accent); }
+  .value small { font-size: 20px; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-left: 6px; }
+  #meta { margin: 8px 0 0; }
+  .stats { margin: 0; }
+  .stats p { margin: 0 0 6px; }
+  .stats dl { display: grid; grid-template-columns: auto auto; gap: 4px 20px; margin: 0; }
+  .stats dt { color: var(--muted); }
+  .stats dd { margin: 0; text-align: right; font-weight: 600; }
+  .scale { grid-column: 1 / -1; }
+  .track { position: relative; height: 6px; background: var(--line); border-radius: 3px; }
+  #marker { position: absolute; top: -5px; width: 4px; height: 16px; margin-left: -2px; border-radius: 2px; background: var(--accent); }
+  #marker[hidden] { display: none; }
+  .ticks { position: relative; height: 18px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .ticks span { position: absolute; transform: translateX(-50%); }
+  .ticks span:first-child { transform: none; }
+  .ticks span:last-child { transform: translateX(-100%); }
+
+  canvas { display: block; width: 100%; height: 240px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--muted); font-size: 14px; }
+  td.r, th.r { text-align: right; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  details summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+  details ol { margin: 4px 0 0; padding-left: 22px; }
+  details li { margin-bottom: 6px; }
+
+  @media (max-width: 560px) {
+    main { padding: 12px; gap: 12px; }
+    .readout { grid-template-columns: 1fr; }
+    canvas { height: 200px; }
+    .conn button { flex: 1 1 100%; }
+  }
 </style>
 </head>
 <body>
-<h1>LuxMeter Logger</h1>
-<button id="conn">Connect</button>
-<button id="csv">Download CSV</button>
-<button id="clear">Clear log</button>
-<label>Graph <select id="win">
-  <option value="60">1 min</option>
-  <option value="600" selected>10 min</option>
-  <option value="3600">1 hour</option>
-  <option value="0">All</option>
-</select></label>
-<div id="now">-- lux</div>
-<div id="status" role="status"></div>
-<canvas id="graph" aria-label="Lux over time"></canvas>
-<table>
-  <thead><tr><th>Time</th><th>Lux</th><th>Gain</th></tr></thead>
-  <tbody id="log"></tbody>
-</table>
+<main>
+  <header>
+    <h1>LuxMeter Logger</h1>
+    <button id="theme" type="button"></button>
+  </header>
+
+  <div id="alert" role="alert" hidden></div>
+
+  <section class="panel conn" aria-label="Connection">
+    <div class="state">
+      <span class="dot" id="dot" aria-hidden="true"></span>
+      <span id="status" role="status">Not connected.</span>
+    </div>
+    <button id="conn" class="primary" type="button">Connect to meter</button>
+  </section>
+
+  <section class="panel readout" aria-label="Current reading">
+    <div>
+      <div class="value num"><span id="value">--</span><small>lux</small></div>
+      <p id="meta" class="muted">No reading yet.</p>
+    </div>
+    <div class="stats">
+      <p class="muted">In graph window</p>
+      <dl class="num">
+        <dt>Min</dt><dd id="min">--</dd>
+        <dt>Max</dt><dd id="max">--</dd>
+        <dt>Average</dt><dd id="avg">--</dd>
+      </dl>
+    </div>
+    <div class="scale" aria-hidden="true">
+      <div class="track"><span id="marker" hidden></span></div>
+      <div class="ticks num">
+        <span style="left:0%">0.01</span><span style="left:14.29%">0.1</span><span style="left:28.57%">1</span>
+        <span style="left:42.86%">10</span><span style="left:57.14%">100</span><span style="left:71.43%">1k</span>
+        <span style="left:85.71%">10k</span><span style="left:100%">100k</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="graph-title">
+    <div class="head">
+      <h2 id="graph-title">Lux over time</h2>
+      <label class="muted">Show
+        <select id="win">
+          <option value="60">Last minute</option>
+          <option value="600" selected>Last 10 minutes</option>
+          <option value="3600">Last hour</option>
+          <option value="0">Whole log</option>
+        </select>
+      </label>
+    </div>
+    <canvas id="graph" role="img" aria-label="Line graph of lux over time. The same readings are listed in the table below."></canvas>
+  </section>
+
+  <section class="panel" aria-labelledby="log-title">
+    <div class="head">
+      <div>
+        <h2 id="log-title">Recent readings</h2>
+        <span id="count" class="muted num"></span>
+      </div>
+      <div class="actions">
+        <button id="csv" type="button">Download CSV</button>
+        <button id="clear" type="button">Clear log</button>
+      </div>
+    </div>
+    <table class="num">
+      <thead><tr><th>Time</th><th class="r">Lux</th><th class="r">Gain</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+  </section>
+
+  <details id="help" class="panel">
+    <summary>How to connect</summary>
+    <ol>
+      <li>Turn on the meter and pair <strong>LuxMeter</strong> in your device's Bluetooth settings.</li>
+      <li>Press <strong>Connect to meter</strong> and choose LuxMeter. On Windows, choose the <strong>Outgoing</strong> COM port
+          (Bluetooth settings, More Bluetooth options, COM Ports).</li>
+      <li>A reading arrives about every half second. The log stays in this browser until you clear it, so download the CSV to keep it.</li>
+    </ol>
+    <p class="muted">Works in Chrome or Edge on Windows, and Chrome 138 or newer on Android (open the page from an https:// link).</p>
+  </details>
+</main>
 
 <script>
 const SPP = '00001101-0000-1000-8000-00805f9b34fb';  // standard Bluetooth serial service
-const KEY = 'luxlog';
+const KEY = 'luxlog', THEME_KEY = 'luxlog-theme';
 const GAP_MS = 5000;  // longer silence (HOLD, too bright) breaks the graph line
 const $ = id => document.getElementById(id);
 
-// Each row: [phone/PC time in ms, ESP32 millis, lux, gain]
-let rows = JSON.parse(localStorage.getItem(KEY) || '[]');
+// Each row: [time in ms, ESP32 millis, lux, gain]
+let rows = load();
+let current = rows.length ? toCurrent(rows[rows.length - 1]) : null;
 let port = null, reader = null, unsaved = false, lastRx = 0;
 
+function load() {
+  try { const r = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(r) ? r : []; }
+  catch { return []; }
+}
+function toCurrent(r) { return { t: r[0], lux: r[2], gain: r[3] }; }
+
 const dec = v => v < 10 ? 2 : (v < 1000 ? 1 : 0);  // same rule as the OLED
+const fmt = v => v.toFixed(dec(v));
 const pad = n => String(n).padStart(2, '0');
 const stamp = t => { const d = new Date(t);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
-const status = s => $('status').textContent = s;
+const clock = t => stamp(t).slice(11);
 
-// One CSV line from the ESP32 ("12345,342.18,25x") -> row, or null for the header or junk.
-function parseLine(line, now) {
+function setState(s, text) {
+  $('dot').dataset.s = s;
+  $('status').dataset.s = s;
+  $('status').textContent = text;
+}
+function showAlert(text) { $('alert').textContent = text; $('alert').hidden = !text; }
+
+// "12345,342.18,25x" -> [12345, 342.18, '25x']. Empty or nan lux means no valid reading -> null.
+function parseLine(line) {
   const p = line.trim().split(',');
-  if (p.length !== 3 || p[0] === '' || p[1] === '' || !/^\d+x$/.test(p[2])) return null;
-  const ms = Number(p[0]), lux = Number(p[1]);
-  if (!Number.isFinite(ms) || !Number.isFinite(lux)) return null;
-  return [now, ms, lux, p[2]];
+  if (p.length !== 3 || !/^\d+$/.test(p[0]) || !/^\d+x$/.test(p[2])) return null;
+  const lux = p[1] === '' ? NaN : Number(p[1]);
+  return [Number(p[0]), Number.isFinite(lux) ? lux : null, p[2]];
 }
 
 function save() {
   if (!unsaved) return;
-  try { localStorage.setItem(KEY, JSON.stringify(rows)); unsaved = false; }
-  catch (e) { status('Storage full: download the CSV, then clear the log.'); }
-}
-
-function add(r) {
-  rows.push(r);
-  unsaved = true;
-  render();
+  try { localStorage.setItem(KEY, JSON.stringify(rows)); unsaved = false; showAlert(''); }
+  catch { showAlert('Browser storage is full, so new readings are no longer saved. Download the CSV, then clear the log.'); }
 }
 
 function render() {
-  const last = rows[rows.length - 1];
-  $('now').textContent = last ? `${last[2].toFixed(dec(last[2]))} lux` : '-- lux';
-  $('log').innerHTML = rows.slice(-20).reverse().map(r =>
-    `<tr><td>${stamp(r[0])}</td><td>${r[2].toFixed(dec(r[2]))}</td><td>${r[3]}</td></tr>`).join('');
+  const has = current && current.lux !== null;
+  $('value').textContent = has ? fmt(current.lux) : '--';
+  $('meta').textContent = !current ? 'No reading yet.'
+    : has ? `Gain ${current.gain}, at ${clock(current.t)}`
+    : 'No valid reading: too bright or out of range.';
+  $('marker').hidden = !has;
+  if (has) {
+    const pos = (Math.log10(Math.min(Math.max(current.lux, 0.01), 1e5)) + 2) / 7 * 100;
+    $('marker').style.left = pos + '%';
+  }
+
+  $('count').textContent = rows.length ? `${rows.length.toLocaleString()} readings stored` : '';
+  $('csv').disabled = $('clear').disabled = rows.length === 0;
+  $('log').innerHTML = rows.length
+    ? rows.slice(-20).reverse().map(r =>
+        `<tr><td>${stamp(r[0])}</td><td class="r">${fmt(r[2])}</td><td class="r">${r[3]}</td></tr>`).join('')
+    : '<tr><td colspan="3" class="muted">No readings yet. Connect to the meter to start logging.</td></tr>';
   draw();
 }
 
 function draw() {
+  const css = getComputedStyle(document.documentElement), col = n => css.getPropertyValue(n).trim();
   const c = $('graph'), g = c.getContext('2d'), dpr = window.devicePixelRatio || 1;
   c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr;
   g.scale(dpr, dpr);
-  const W = c.clientWidth, H = c.clientHeight, L = 56, B = 20;
+  const W = c.clientWidth, H = c.clientHeight, L = 56, B = 22;
   const win = Number($('win').value) * 1000;
   const pts = win ? rows.filter(r => r[0] >= Date.now() - win) : rows;
-  g.font = '12px system-ui'; g.fillStyle = '#bbb';
-  if (pts.length < 2) { g.fillText('Waiting for data...', L, H / 2); return; }
 
-  let lo = Infinity, hi = -Infinity;
-  for (const r of pts) { lo = Math.min(lo, r[2]); hi = Math.max(hi, r[2]); }
+  let lo = Infinity, hi = -Infinity, sum = 0;
+  for (const r of pts) { lo = Math.min(lo, r[2]); hi = Math.max(hi, r[2]); sum += r[2]; }
+  $('min').textContent = pts.length ? fmt(lo) : '--';
+  $('max').textContent = pts.length ? fmt(hi) : '--';
+  $('avg').textContent = pts.length ? fmt(sum / pts.length) : '--';
+
+  g.font = '12px system-ui, sans-serif';
+  g.fillStyle = col('--muted');
+  if (pts.length < 2) {
+    g.fillText(rows.length ? 'Not enough readings in this window yet.' : 'No readings yet.', L, H / 2);
+    return;
+  }
+
   if (hi - lo < 1e-6) { lo -= 1; hi += 1; }
   const m = (hi - lo) * 0.1; lo = Math.max(0, lo - m); hi += m;
-  const t0 = pts[0][0], t1 = pts[pts.length - 1][0] || t0 + 1;
+  const t0 = pts[0][0], t1 = pts[pts.length - 1][0];
   const x = t => L + (t - t0) / Math.max(1, t1 - t0) * (W - L - 4);
-  const y = v => 4 + (hi - v) / (hi - lo) * (H - B - 8);
+  const y = v => 6 + (hi - v) / (hi - lo) * (H - B - 12);
 
-  g.strokeStyle = '#333'; g.lineWidth = 1;
+  g.strokeStyle = col('--line'); g.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
-    const v = lo + (hi - lo) * i / 4, yy = y(v);
+    const v = lo + (hi - lo) * i / 4, yy = Math.round(y(v)) + 0.5;
     g.beginPath(); g.moveTo(L, yy); g.lineTo(W, yy); g.stroke();
-    g.fillText(v.toFixed(dec(hi)), 2, yy + 4);
+    g.fillText(v.toFixed(dec(hi)), 0, yy + 4);
   }
-  g.fillText(stamp(t0).slice(11), L, H - 4);
-  const end = stamp(t1).slice(11);
-  g.fillText(end, W - g.measureText(end).width - 4, H - 4);
+  g.fillText(clock(t0), L, H - 4);
+  const end = clock(t1);
+  g.fillText(end, W - g.measureText(end).width, H - 4);
 
-  g.strokeStyle = '#fc3'; g.lineWidth = 2; g.beginPath();
+  g.strokeStyle = col('--accent'); g.lineWidth = 2; g.lineJoin = 'round'; g.beginPath();
   pts.forEach((r, i) => {
     if (i === 0 || r[0] - pts[i - 1][0] > GAP_MS) g.moveTo(x(r[0]), y(r[2]));
     else g.lineTo(x(r[0]), y(r[2]));
@@ -118,15 +281,25 @@ function draw() {
 }
 
 async function connect() {
+  $('conn').disabled = true;
+  setState('busy', 'Choose LuxMeter in the browser prompt.');
   try {
     port = await navigator.serial.requestPort({ allowedBluetoothServiceClassIds: [SPP] });
+    setState('busy', 'Opening the Bluetooth link. This can take a few seconds.');
     await port.open({ baudRate: 115200 });  // baud is ignored over Bluetooth
-  } catch (e) { port = null; status('Not connected: ' + e.message); return; }
+  } catch (e) {
+    port = null;
+    $('conn').disabled = false;
+    if (e.name === 'NotFoundError') setState('idle', 'No meter chosen.');
+    else setState('error', `Could not connect (${e.message}). Check that the meter is on and paired.`);
+    return;
+  }
 
-  status('Connected. Waiting for the first line...');
+  $('conn').disabled = false;
   $('conn').textContent = 'Disconnect';
+  setState('busy', 'Connected. Waiting for the first reading.');
   const td = new TextDecoder();
-  let buf = '', got = 0;
+  let buf = '', anchor = null, lastMs = -1;
   lastRx = Date.now();
   reader = port.readable.getReader();
   try {
@@ -138,25 +311,44 @@ async function connect() {
       const lines = buf.split('\n');
       buf = lines.pop();
       for (const l of lines) {
-        got++;
-        const r = parseLine(l, Date.now());
-        if (r) add(r);
-        status(`Connected. ${got} lines received. Last: "${l.trim()}"`);
+        const p = parseLine(l);
+        if (!p) {
+          if (l.trim() && !l.startsWith('millis')) setState('error', `Unexpected message from the meter: "${l.trim()}"`);
+          continue;
+        }
+        const [ms, lux, gain] = p;
+        // Time comes from the meter's clock, so a burst after Android pauses the page keeps its real spacing.
+        if (anchor === null || ms < lastMs) anchor = Date.now() - ms;
+        lastMs = ms;
+        current = { t: anchor + ms, lux, gain };
+        if (lux !== null) { rows.push([anchor + ms, ms, lux, gain]); unsaved = true; }
+        setState('live', 'Live. Receiving from LuxMeter.');
+        render();
       }
     }
-    status('Disconnected.');
+    setState('idle', 'Disconnected.');
   } catch (e) {
-    status('Connection lost: ' + e.message);
+    setState('error', `Connection lost (${e.message}). Press Connect to meter to try again.`);
   } finally {
     reader.releaseLock();
     await port.close().catch(() => {});
     port = reader = null;
-    $('conn').textContent = 'Connect';
+    $('conn').textContent = 'Connect to meter';
     save();
   }
 }
 
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $('theme').textContent = t === 'dark' ? 'Light theme' : 'Dark theme';
+  try { localStorage.setItem(THEME_KEY, t); } catch {}
+  draw();
+}
+
 $('conn').onclick = () => reader ? reader.cancel() : connect();
+$('theme').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+$('win').onchange = draw;
+window.onresize = draw;
 
 $('csv').onclick = () => {
   save();
@@ -169,28 +361,36 @@ $('csv').onclick = () => {
 };
 
 $('clear').onclick = () => {
-  if (!confirm('Delete all logged rows? Download the CSV first if you need them.')) return;
-  rows = []; localStorage.removeItem(KEY); unsaved = false; render();
+  if (!confirm(`Delete all ${rows.length.toLocaleString()} readings? Download the CSV first if you need them.`)) return;
+  rows = []; current = null; unsaved = false;
+  localStorage.removeItem(KEY);
+  showAlert('');
+  render();
 };
 
-$('win').onchange = draw;
-window.onresize = draw;
 // shortcut: whole log rewritten to localStorage every 30 s (~5 MB limit, about 12 h at 2 rows/s); move to IndexedDB if you log for days.
 setInterval(save, 30000);
 setInterval(() => {
   if (reader && Date.now() - lastRx > 5000)
-    status('Connected, but nothing received for 5 s. Is HOLD on? On Windows, pick the "Outgoing" COM port ' +
-           '(Bluetooth settings > More Bluetooth options > COM Ports). Re-upload lux_meter_bt.ino if unsure.');
+    setState('error', 'Connected, but no data for 5 seconds. Check that HOLD is off. On Windows, reconnect and choose the Outgoing COM port.');
 }, 1000);
 document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
 window.addEventListener('beforeunload', save);
 
+// Dark by default: a bright screen next to the sensor can spill light into low-lux readings.
+let savedTheme = null;
+try { savedTheme = localStorage.getItem(THEME_KEY); } catch {}
+setTheme(savedTheme === 'light' ? 'light' : 'dark');
+
 if (!('serial' in navigator)) {
   $('conn').disabled = true;
-  status('This browser has no Web Serial. Use Chrome or Edge on Windows, or Chrome 138+ on Android.');
+  setState('error', 'This browser cannot reach Bluetooth serial devices.');
+  showAlert('Use Chrome or Edge on Windows, or Chrome 138 or newer on Android opened from an https:// link.');
+} else if (rows.length) {
+  setState('idle', 'Not connected. Your saved log is shown below.');
 }
+$('help').open = rows.length === 0;
 render();
 </script>
 </body>
 </html>
-
