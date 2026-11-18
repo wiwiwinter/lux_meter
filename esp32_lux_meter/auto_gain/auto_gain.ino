@@ -43,7 +43,7 @@ bool readLux(float &lux, bool &saturated) {
       gainIdx++; applyGain(); continue;
     }
 
-    lux = tsl.calculateLux(full, ir);
+    lux = full ? tsl.calculateLux(full, ir) : 0;
     if (lux < 0) {                  // negative = overflow per Adafruit docs
       if (gainIdx > 0) { gainIdx--; applyGain(); continue; }
       saturated = true;

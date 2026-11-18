@@ -31,7 +31,7 @@ void loop() {
   uint32_t lum  = tsl.getFullLuminosity();
   uint16_t ir   = lum >> 16;      // high word: infrared
   uint16_t full = lum & 0xFFFF;   // low word: IR + visible
-  float lux = tsl.calculateLux(full, ir);
+  float lux = full ? tsl.calculateLux(full, ir) : 0;
 
   Serial.print("IR: ");      Serial.print(ir);
   Serial.print("  Full: ");  Serial.print(full);

@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <!-- Background split: Dark Theme (left) / Light Theme (right) -->
+  <rect x="0" y="0" width="480" height="540" fill="#141311"/>
+  <rect x="480" y="0" width="480" height="540" fill="#f4f3ef"/>
+  <line x1="480" y1="0" x2="480" y2="540" stroke="#3a3832" stroke-width="1"/>
+
+  <!-- ================= LEFT: DARK THEME ================= -->
+  <g transform="translate(20, 18)">
+    <!-- Header -->
+    <text x="0" y="20" fill="#ecebe6" font-size="16" font-weight="600">LuxMeter Logger</text>
+    <rect x="348" y="2" width="92" height="28" rx="6" fill="none" stroke="#a9a59b"/>
+    <text x="394" y="20" fill="#ecebe6" font-size="12" text-anchor="middle">Light theme</text>
+
+    <!-- Connection Bar -->
+    <rect x="0" y="40" width="440" height="52" rx="8" fill="#1c1b18" stroke="#3a3832"/>
+    <circle cx="20" cy="66" r="5" fill="#f2b338"/>
+    <text x="34" y="71" fill="#ecebe6" font-size="13">Live. Receiving from LuxMeter.</text>
+    <rect x="332" y="50" width="96" height="32" rx="6" fill="#ecebe6"/>
+    <text x="380" y="71" fill="#141311" font-size="13" font-weight="600" text-anchor="middle">Disconnect</text>
+
+    <!-- Readout Panel -->
+    <rect x="0" y="102" width="440" height="148" rx="8" fill="#1c1b18" stroke="#3a3832"/>
+    <text x="16" y="168" fill="#f2b338" font-size="56" font-weight="600" letter-spacing="-1">342.2</text>
+    <text x="164" y="168" fill="#a9a59b" font-size="18" font-weight="500">lux</text>
+    <text x="16" y="190" fill="#a9a59b" font-size="13">Gain 25x, at 14:22:08</text>
+
+    <!-- Window Stats -->
+    <text x="296" y="126" fill="#a9a59b" font-size="12">In graph window</text>
+    <text x="296" y="146" fill="#a9a59b" font-size="13">Min</text>
+    <text x="424" y="146" fill="#ecebe6" font-size="13" font-weight="600" text-anchor="end">118.4</text>
+    <text x="296" y="166" fill="#a9a59b" font-size="13">Max</text>
+    <text x="424" y="166" fill="#ecebe6" font-size="13" font-weight="600" text-anchor="end">412.0</text>
+    <text x="296" y="186" fill="#a9a59b" font-size="13">Average</text>
+    <text x="424" y="186" fill="#ecebe6" font-size="13" font-weight="600" text-anchor="end">298.6</text>
+
+    <!-- 7-Decade Logarithmic Scale -->
+    <rect x="16" y="210" width="408" height="6" rx="3" fill="#3a3832"/>
+    <rect x="278" y="205" width="4" height="16" rx="2" fill="#f2b338"/>
+    <g fill="#a9a59b" font-size="11">
+      <text x="16" y="234">0.01</text>
+      <text x="74" y="234" text-anchor="middle">0.1</text>
+      <text x="132" y="234" text-anchor="middle">1</text>
+      <text x="191" y="234" text-anchor="middle">10</text>
+      <text x="249" y="234" text-anchor="middle">100</text>
+      <text x="307" y="234" text-anchor="middle">1k</text>
+      <text x="366" y="234" text-anchor="middle">10k</text>
+      <text x="424" y="234" text-anchor="end">100k</text>
+    </g>
+
+    <!-- Graph Panel -->
+    <rect x="0" y="260" width="440" height="154" rx="8" fill="#1c1b18" stroke="#3a3832"/>
+    <text x="16" y="284" fill="#ecebe6" font-size="14" font-weight="600">Lux over time</text>
+    <text x="274" y="284" fill="#a9a59b" font-size="12">Show</text>
+    <rect x="310" y="268" width="114" height="24" rx="5" fill="#1c1b18" stroke="#a9a59b"/>
+    <text x="320" y="284" fill="#ecebe6" font-size="12">Last 10 minutes</text>
+
+    <!-- Graph Grid & Trace -->
+    <g stroke="#3a3832" stroke-width="1">
+      <line x1="52" y1="304" x2="424" y2="304"/>
+      <line x1="52" y1="330" x2="424" y2="330"/>
+      <line x1="52" y1="356" x2="424" y2="356"/>
+      <line x1="52" y1="382" x2="424" y2="382"/>
+    </g>
+    <g fill="#a9a59b" font-size="11">
+      <text x="16" y="308">450.0</text>
+      <text x="16" y="334">330.0</text>
+      <text x="16" y="360">210.0</text>
+      <text x="16" y="386">90.0</text>
+      <text x="52" y="402">14:12:08</text>
+      <text x="424" y="402" text-anchor="end">14:22:08</text>
+    </g>
+    <polyline fill="none" stroke="#f2b338" stroke-width="2" stroke-linejoin="round"
+      points="52,368 84,364 116,358 148,362 180,340 212,316 244,312 276,322 308,334 340,326 372,320 404,324 424,322"/>
+
+    <!-- Recent Readings Panel -->
+    <rect x="0" y="424" width="440" height="96" rx="8" fill="#1c1b18" stroke="#3a3832"/>
+    <text x="16" y="446" fill="#ecebe6" font-size="14" font-weight="600">Recent readings</text>
+    <text x="132" y="446" fill="#a9a59b" font-size="12">1,200 readings stored</text>
+    <rect x="268" y="430" width="90" height="24" rx="5" fill="none" stroke="#a9a59b"/>
+    <text x="313" y="446" fill="#ecebe6" font-size="11" text-anchor="middle">Download CSV</text>
+    <rect x="364" y="430" width="60" height="24" rx="5" fill="none" stroke="#a9a59b"/>
+    <text x="394" y="446" fill="#ecebe6" font-size="11" text-anchor="middle">Clear log</text>
+
+    <line x1="16" y1="474" x2="424" y2="474" stroke="#3a3832"/>
+    <text x="16" y="468" fill="#a9a59b" font-size="12" font-weight="600">Time</text>
+    <text x="340" y="468" fill="#a9a59b" font-size="12" font-weight="600" text-anchor="end">Lux</text>
+    <text x="424" y="468" fill="#a9a59b" font-size="12" font-weight="600" text-anchor="end">Gain</text>
+
+    <text x="16" y="492" fill="#ecebe6" font-size="12">2026-11-18 14:22:08</text>
+    <text x="340" y="492" fill="#ecebe6" font-size="12" text-anchor="end">342.2</text>
+    <text x="424" y="492" fill="#ecebe6" font-size="12" text-anchor="end">25x</text>
+    <text x="16" y="510" fill="#ecebe6" font-size="12">2026-11-18 14:22:07</text>
+    <text x="340" y="510" fill="#ecebe6" font-size="12" text-anchor="end">341.8</text>
+    <text x="424" y="510" fill="#ecebe6" font-size="12" text-anchor="end">25x</text>
+  </g>
+
+  <!-- ================= RIGHT: LIGHT THEME ================= -->
+  <g transform="translate(500, 18)">
+    <!-- Header -->
+    <text x="0" y="20" fill="#1d1c19" font-size="16" font-weight="600">LuxMeter Logger</text>
+    <rect x="348" y="2" width="92" height="28" rx="6" fill="none" stroke="#5c5850"/>
+    <text x="394" y="20" fill="#1d1c19" font-size="12" text-anchor="middle">Dark theme</text>
+
+    <!-- Connection Bar -->
+    <rect x="0" y="40" width="440" height="52" rx="8" fill="#ffffff" stroke="#d6d3ca"/>
+    <circle cx="20" cy="66" r="5" fill="#9a6200"/>
+    <text x="34" y="71" fill="#1d1c19" font-size="13">Live. Receiving from LuxMeter.</text>
+    <rect x="332" y="50" width="96" height="32" rx="6" fill="#1d1c19"/>
+    <text x="380" y="71" fill="#ffffff" font-size="13" font-weight="600" text-anchor="middle">Disconnect</text>
+
+    <!-- Readout Panel -->
+    <rect x="0" y="102" width="440" height="148" rx="8" fill="#ffffff" stroke="#d6d3ca"/>
+    <text x="16" y="168" fill="#9a6200" font-size="56" font-weight="600" letter-spacing="-1">342.2</text>
+    <text x="164" y="168" fill="#5c5850" font-size="18" font-weight="500">lux</text>
+    <text x="16" y="190" fill="#5c5850" font-size="13">Gain 25x, at 14:22:08</text>
+
+    <!-- Window Stats -->
+    <text x="296" y="126" fill="#5c5850" font-size="12">In graph window</text>
+    <text x="296" y="146" fill="#5c5850" font-size="13">Min</text>
+    <text x="424" y="146" fill="#1d1c19" font-size="13" font-weight="600" text-anchor="end">118.4</text>
+    <text x="296" y="166" fill="#5c5850" font-size="13">Max</text>
+    <text x="424" y="166" fill="#1d1c19" font-size="13" font-weight="600" text-anchor="end">412.0</text>
+    <text x="296" y="186" fill="#5c5850" font-size="13">Average</text>
+    <text x="424" y="186" fill="#1d1c19" font-size="13" font-weight="600" text-anchor="end">298.6</text>
+
+    <!-- 7-Decade Logarithmic Scale -->
+    <rect x="16" y="210" width="408" height="6" rx="3" fill="#d6d3ca"/>
+    <rect x="278" y="205" width="4" height="16" rx="2" fill="#9a6200"/>
+    <g fill="#5c5850" font-size="11">
+      <text x="16" y="234">0.01</text>
+      <text x="74" y="234" text-anchor="middle">0.1</text>
+      <text x="132" y="234" text-anchor="middle">1</text>
+      <text x="191" y="234" text-anchor="middle">10</text>
+      <text x="249" y="234" text-anchor="middle">100</text>
+      <text x="307" y="234" text-anchor="middle">1k</text>
+      <text x="366" y="234" text-anchor="middle">10k</text>
+      <text x="424" y="234" text-anchor="end">100k</text>
+    </g>
+
+    <!-- Graph Panel -->
+    <rect x="0" y="260" width="440" height="154" rx="8" fill="#ffffff" stroke="#d6d3ca"/>
+    <text x="16" y="284" fill="#1d1c19" font-size="14" font-weight="600">Lux over time</text>
+    <text x="274" y="284" fill="#5c5850" font-size="12">Show</text>
+    <rect x="310" y="268" width="114" height="24" rx="5" fill="#ffffff" stroke="#5c5850"/>
+    <text x="320" y="284" fill="#1d1c19" font-size="12">Last 10 minutes</text>
+
+    <!-- Graph Grid & Trace -->
+    <g stroke="#d6d3ca" stroke-width="1">
+      <line x1="52" y1="304" x2="424" y2="304"/>
+      <line x1="52" y1="330" x2="424" y2="330"/>
+      <line x1="52" y1="356" x2="424" y2="356"/>
+      <line x1="52" y1="382" x2="424" y2="382"/>
+    </g>
+    <g fill="#5c5850" font-size="11">
+      <text x="16" y="308">450.0</text>
+      <text x="16" y="334">330.0</text>
+      <text x="16" y="360">210.0</text>
+      <text x="16" y="386">90.0</text>
+      <text x="52" y="402">14:12:08</text>
+      <text x="424" y="402" text-anchor="end">14:22:08</text>
+    </g>
+    <polyline fill="none" stroke="#9a6200" stroke-width="2" stroke-linejoin="round"
+      points="52,368 84,364 116,358 148,362 180,340 212,316 244,312 276,322 308,334 340,326 372,320 404,324 424,322"/>
+
+    <!-- Recent Readings Panel -->
+    <rect x="0" y="424" width="440" height="96" rx="8" fill="#ffffff" stroke="#d6d3ca"/>
+    <text x="16" y="446" fill="#1d1c19" font-size="14" font-weight="600">Recent readings</text>
+    <text x="132" y="446" fill="#5c5850" font-size="12">1,200 readings stored</text>
+    <rect x="268" y="430" width="90" height="24" rx="5" fill="none" stroke="#5c5850"/>
+    <text x="313" y="446" fill="#1d1c19" font-size="11" text-anchor="middle">Download CSV</text>
+    <rect x="364" y="430" width="60" height="24" rx="5" fill="none" stroke="#5c5850"/>
+    <text x="394" y="446" fill="#1d1c19" font-size="11" text-anchor="middle">Clear log</text>
+
+    <line x1="16" y1="474" x2="424" y2="474" stroke="#d6d3ca"/>
+    <text x="16" y="468" fill="#5c5850" font-size="12" font-weight="600">Time</text>
+    <text x="340" y="468" fill="#5c5850" font-size="12" font-weight="600" text-anchor="end">Lux</text>
+    <text x="424" y="468" fill="#5c5850" font-size="12" font-weight="600" text-anchor="end">Gain</text>
+
+    <text x="16" y="492" fill="#1d1c19" font-size="12">2026-11-18 14:22:08</text>
+    <text x="340" y="492" fill="#1d1c19" font-size="12" text-anchor="end">342.2</text>
+    <text x="424" y="492" fill="#1d1c19" font-size="12" text-anchor="end">25x</text>
+    <text x="16" y="510" fill="#1d1c19" font-size="12">2026-11-18 14:22:07</text>
+    <text x="340" y="510" fill="#1d1c19" font-size="12" text-anchor="end">341.8</text>
+    <text x="424" y="510" fill="#1d1c19" font-size="12" text-anchor="end">25x</text>
+  </g>
+</svg>

@@ -37,7 +37,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// ---------------- pins and display ----------------
+// Pins and display
 #define SDA_PIN    21
 #define SCL_PIN    22
 #define HOLD_PIN   4
@@ -53,14 +53,12 @@ const uint32_t LONG_MS     = 1500;  // MODE long-press time
 Adafruit_SSD1306 display(SCREEN_W, SCREEN_H, &Wire, -1);
 bool oledOk = false;
 
-// ---------------- sensor ----------------
+// Sensor and calibration: calibrated = raw * CAL_SCALE + CAL_OFFSET
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
-
-// calibrated = raw * CAL_SCALE + CAL_OFFSET (see the calibration section of the document)
 const float CAL_SCALE  = 1.00;
 const float CAL_OFFSET = 0.00;
 
-// Auto-gain tuning: design choices, not datasheet values.
+// Auto-gain thresholds (design choices, not datasheet values)
 const tsl2591Gain_t gains[]    = { TSL2591_GAIN_LOW, TSL2591_GAIN_MED,
                                    TSL2591_GAIN_HIGH, TSL2591_GAIN_MAX };
 const char*         gainName[] = { "1x", "25x", "428x", "9876x" };
@@ -69,7 +67,7 @@ int gainIdx = 1;                    // start at 25x
 const uint16_t TOO_BRIGHT = 30000;  // raw counts: step gain down above this
 const uint16_t TOO_DIM    = 800;    // raw counts: step gain up below this (x25 biggest step stays under TOO_BRIGHT)
 
-// ---------------- state ----------------
+// Measurement and UI state
 float    lux = 0;
 bool     valid = false;
 bool     saturated = false;
@@ -81,7 +79,7 @@ bool     holdOn = false;
 enum { MODE_LUX, MODE_MINMAX, MODE_RAW, MODE_COUNT };
 int mode = MODE_LUX;
 
-// ---------------- buttons ----------------
+// Debounced button state
 struct Button {
   uint8_t  pin;
   bool     state;       // true = released (pull-up), false = pressed
@@ -107,7 +105,6 @@ uint8_t pollButton(Button &b) {
   return EVT_NONE;
 }
 
-// ---------------- sensor helpers ----------------
 void applyGain() {
   tsl.setGain(gains[gainIdx]);
 }
@@ -131,7 +128,7 @@ bool readLux(float &out, bool &sat) {
       gainIdx++; applyGain(); continue;
     }
 
-    float v = tsl.calculateLux(full, ir);
+    float v = full ? tsl.calculateLux(full, ir) : 0;
     if (v < 0) {                    // negative = overflow per Adafruit docs
       if (gainIdx > 0) { gainIdx--; applyGain(); continue; }
       sat = true;
@@ -149,7 +146,6 @@ void resetMinMax() {
   maxLux = -1e12;
 }
 
-// ---------------- display ----------------
 // Decimal places that fit the value: 0.01 in the dark, whole numbers in daylight.
 int dec(float v) { return v < 10 ? 2 : (v < 1000 ? 1 : 0); }
 
@@ -215,7 +211,6 @@ void draw() {
   display.display();
 }
 
-// ---------------- setup / loop ----------------
 void setup() {
   Serial.begin(115200);
   delay(300);

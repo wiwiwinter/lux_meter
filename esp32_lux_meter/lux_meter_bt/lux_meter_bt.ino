@@ -52,7 +52,7 @@
 #error Classic Bluetooth is not enabled for this board. Select ESP32 Dev Module.
 #endif
 
-// ---------------- pins and display ----------------
+// Pins and display
 #define SDA_PIN    21
 #define SCL_PIN    22
 #define HOLD_PIN   4
@@ -71,14 +71,12 @@ const char* BT_NAME = "LuxMeter";
 bool btWasConnected = false;
 bool oledOk = false;
 
-// ---------------- sensor ----------------
+// Sensor and calibration: calibrated = raw * CAL_SCALE + CAL_OFFSET
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
-
-// calibrated = raw * CAL_SCALE + CAL_OFFSET (see the calibration section of the document)
 const float CAL_SCALE  = 1.00;
 const float CAL_OFFSET = 0.00;
 
-// Auto-gain tuning: design choices, not datasheet values.
+// Auto-gain thresholds (design choices, not datasheet values)
 const tsl2591Gain_t gains[]    = { TSL2591_GAIN_LOW, TSL2591_GAIN_MED,
                                    TSL2591_GAIN_HIGH, TSL2591_GAIN_MAX };
 const char*         gainName[] = { "1x", "25x", "428x", "9876x" };
@@ -87,7 +85,7 @@ int gainIdx = 1;                    // start at 25x
 const uint16_t TOO_BRIGHT = 30000;  // raw counts: step gain down above this
 const uint16_t TOO_DIM    = 800;    // raw counts: step gain up below this (x25 biggest step stays under TOO_BRIGHT)
 
-// ---------------- state ----------------
+// Measurement and UI state
 float    lux = 0;
 bool     valid = false;
 bool     saturated = false;
@@ -99,7 +97,7 @@ bool     holdOn = false;
 enum { MODE_LUX, MODE_MINMAX, MODE_RAW, MODE_COUNT };
 int mode = MODE_LUX;
 
-// ---------------- buttons ----------------
+// Debounced button state
 struct Button {
   uint8_t  pin;
   bool     state;       // true = released (pull-up), false = pressed
@@ -125,7 +123,6 @@ uint8_t pollButton(Button &b) {
   return EVT_NONE;
 }
 
-// ---------------- sensor helpers ----------------
 void applyGain() {
   tsl.setGain(gains[gainIdx]);
 }
@@ -149,7 +146,7 @@ bool readLux(float &out, bool &sat) {
       gainIdx++; applyGain(); continue;
     }
 
-    float v = tsl.calculateLux(full, ir);
+    float v = full ? tsl.calculateLux(full, ir) : 0;
     if (v < 0) {                    // negative = overflow per Adafruit docs
       if (gainIdx > 0) { gainIdx--; applyGain(); continue; }
       sat = true;
@@ -167,7 +164,6 @@ void resetMinMax() {
   maxLux = -1e12;
 }
 
-// ---------------- display ----------------
 // Decimal places that fit the value: 0.01 in the dark, whole numbers in daylight.
 int dec(float v) { return v < 10 ? 2 : (v < 1000 ? 1 : 0); }
 
@@ -233,7 +229,6 @@ void draw() {
   display.display();
 }
 
-// ---------------- setup / loop ----------------
 void setup() {
   Serial.begin(115200);
   delay(300);
@@ -266,7 +261,10 @@ void setup() {
       display.println("Check wiring");
       display.display();
     }
-    while (1) delay(10);
+    while (1) {
+      if (SerialBT.hasClient()) SerialBT.println("error: TSL2591 not found");
+      delay(1000);
+    }
   }
   tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);
   applyGain();
@@ -281,13 +279,13 @@ void btCheckClient() {
   if (connected) SerialBT.println("millis,lux,gain");
 }
 
-// One CSV line per measurement. Empty lux = no valid reading (too bright / out of range).
+// One CSV line per measurement in a single packet. Empty lux = no valid reading.
 void btSend() {
   if (!btWasConnected) return;
-  SerialBT.print(millis());   SerialBT.print(',');
-  if (valid) SerialBT.print(lux, 2);
-  SerialBT.print(',');
-  SerialBT.println(gainName[gainIdx]);
+  char line[40];
+  if (valid) snprintf(line, sizeof(line), "%lu,%.2f,%s", (unsigned long)millis(), lux, gainName[gainIdx]);
+  else       snprintf(line, sizeof(line), "%lu,,%s",     (unsigned long)millis(), gainName[gainIdx]);
+  SerialBT.println(line);
 }
 
 void loop() {
